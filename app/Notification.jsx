@@ -1,31 +1,40 @@
-import React from 'react';
-import { View, Text, FlatList } from 'react-native';
+import React, { useEffect } from 'react';
+import { View, Text, Button, Platform } from 'react-native';
+import * as Notifications from 'expo-notifications';
 
-const NotificationsPage = () => {
-  
-  const notifications = [
-    { id: '1', message: 'Your event registration was successful.' },
-    { id: '2', message: 'Your profile has been updated.' },
-    { id: '3', message: 'New updates are available in the app.' },
-    { id: '4', message: 'Your subscription is expiring soon.' },
-  ];
+const Notification = () => {
+  useEffect(() => {
+    // Request permissions for notifications
+    Notifications.requestPermissionsAsync();
 
-  const renderNotification = ({ item }) => (
-    <View className="bg-white p-4 mb-2 rounded-lg shadow">
-      <Text className="text-lg font-semibold">{item.message}</Text>
-    </View>
-  );
+    // Listener to handle incoming notifications
+    const subscription = Notifications.addNotificationReceivedListener(notification => {
+      console.log("Received notification:", notification);
+    });
+
+    // Cleanup on component unmount
+    return () => {
+      subscription.remove();
+    };
+  }, []);
+
+  const triggerNotification = () => {
+    // Function to trigger a notification manually (e.g., when a new donation is made)
+    Notifications.scheduleNotificationAsync({
+      content: {
+        title: "New Donation Available!",
+        body: "A new donation has been posted. Check it out!",
+      },
+      trigger: { seconds: 1 }, // Trigger immediately
+    });
+  };
 
   return (
-    <View className="flex-1 bg-gray-100 p-4">
-      <Text className="text-2xl font-bold mb-4">Notifications</Text>
-      <FlatList
-        data={notifications}
-        keyExtractor={(item) => item.id}
-        renderItem={renderNotification}
-      />
+    <View>
+      <Text>Donation Notification Example</Text>
+      <Button title="Trigger Notification" onPress={triggerNotification} />
     </View>
   );
 };
 
-export default NotificationsPage;
+export default Notification;
